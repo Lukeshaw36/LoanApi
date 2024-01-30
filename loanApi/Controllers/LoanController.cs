@@ -81,6 +81,7 @@ namespace loanApi.Controllers
             
             return Ok(loanStatus); 
 
+
         }
 
         [HttpPost("payment")]
@@ -104,9 +105,8 @@ namespace loanApi.Controllers
 
             var paymentId = await _paymentRepository.MakePaymentAsync(payment); 
 
-            return Ok($"{paymentDetails.Amount} deducted successfully. Payment reference Id: {paymentId}");
-        }
-        
+
+
     }
 
 }
