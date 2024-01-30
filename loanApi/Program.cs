@@ -7,6 +7,13 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
+using loanApi.Services.LoanHistories;
+using loanApi.Helper;
+using loanApi.Services.LoanPayments;
+using loanApi.Services.AccountInformations;
+using loanApi.Services.CardDetails;
+
+
 
 
 
@@ -24,16 +31,25 @@ using loanApi.Services.UserRegister;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddScoped<IRegisterUser, RegisterService>();
+builder.Services.AddDbContext<DataContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<IUser, UserService>();
 builder.Services.AddScoped<IUserProfile, UserProfileService>();
 builder.Services.AddScoped<IUserLogin, LoginService>();
 builder.Services.AddScoped<IValidateOTP, ValidateOtpService>();
-builder.Services.AddDbContext<DataContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddTransient<ILoanTypeRepository, LoanTypeRepository>();
+builder.Services.AddScoped<ILoanTypeRepository, LoanTypeRepository>();
+builder.Services.AddScoped<ILoanHistoryRepository, LoanHistoryRepository>();
+builder.Services.AddScoped<ILoanService, LoanService>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IAccountInformationRepository, AccountInformationRepository>();
+builder.Services.AddScoped<ICardDetailsRepository, CardDetailsRepository>();
+
 // Add services to the container.
 
 //Add automapper
 builder.Services.AddAutoMapper(typeof(Program));
+
+//Add Memory cache
+builder.Services.AddMemoryCache();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -41,7 +57,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => {
     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
     {
-        Description = "Standard Authorization Header Using The Bearer Scheme(\"bearer {token}\")",
+        Description = "Standard Authorization Header Using The Bearer Scheme(\"Bearer {token}\")",
         In = ParameterLocation.Header,
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey
@@ -62,7 +78,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
